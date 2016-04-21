@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="author" content="Ecole d'ingénieurs ESTIA, Vincent Dauliac, Marc Dando, Bruno Caquinaud, Alexandre Marcuzzo" />
+
+		<!-- IOS App metas -->
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-transluscent" />
+		<link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
+		<link rel="apple-touch-icon" sizes="76x76" href="img/touch-icon-ipad.png" />
+		<link rel="apple-touch-icon" sizes="120x120" href="img/touch-icon-iphone-retina.png" />
+		<link rel="apple-touch-icon" sizes="152x152" href="img/touch-icon-ipad-retina.png" />
+		<!-- <link rel="apple-touch-startup-image" href="/startup.png" /> -->
+
+		<!-- Facebook Open-graph -->
+		<meta property="og:title" content="Carduino | Web application" />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="####" />
+		<meta property="og:image" content="####/img/carduino.png" />
+
+		<!-- Twitter Cards -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:creator" content="VincentDauliac" />
+		<meta name="twitter:url" content="####" />
+		<meta name="twitter:title" content="Carduino | Web application" />
+		<meta name="twitter:description" content="Réseau de capteur communiquant. Ecole d'ingénieurs ESTIA" />
+		<meta name="twitter:image:src" content="####/img/carduino.png" />
+
+		<!-- CSS -->
+		<link rel="stylesheet" type="text/css" href="css/reset.css" />
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		<link rel="stylesheet" type="text/css" href="css/c3.css" />
+
+		<!-- Favicon -->
+		<link rel="icon" type="image/png" href="img/favicon.png" />
+
+		<!-- Features detection -->
+		<script src="js/modernizr.js"></script>
+
+		<!-- App title -->
+		<title>Carduino App</title>
+	</head>
+
+	<body>
+		<div id="topbar">
+			<img id="web-img" src="img/carduino-web-app.svg" alt="Carduino web application logo" />
+			<img id="mobile-img" src="img/carduino-mobile-app.svg" alt="Carduino mobile app logo" />
+			<img id="desktop-img" src="img/carduino-desktop-app.svg" alt="Carduino desktop app logo" />
+		</div>
+
+		<section id="overlay">
+			<div class="login-content-wrapper">
+				<h2>
+					<img src="img/carduino.svg" alt="Carduino logo" />
+				</h2>
+
+				<div id="info-message">
+					<div class="loader">
+						<div class="dot"></div>
+						<div class="dot"></div>
+						<div class="dot"></div>
+					</div>
+
+					<div class="message" id="loading">
+						Loading in progress...
+					</div>
+
+					<div class="message" id="server-not-connected">
+						Offline, impossible to connect to the Carduino server.
+						<br>
+						Reconnection attempt in progress...
+					</div>
+
+					<div class="message" id="server-disconnected">
+						Connexion Suspended, impossible to reach the Carduino server.
+						<br>
+						Reconnection attempt in progress...
+					</div>
+
+					<div class="message" id="connexion-closed">
+						Connection closed by the server.
+						<br>
+						Please refresh and try to re-authenticate.
+					</div>
+
+					<div class="message" id="client-logout">
+						Logging out in progress...
+					</div>
+				</div>
+
+				<form id="login-form">
+					<input id="auth-username" type="text" placeholder="Username" />
+					<input id="auth-password" type="password" placeholder="Password" />
+
+					<span>Remember me</span>
+					<input id="auth-rememberme" class="toggle" type="checkbox">
+					<label for="auth-rememberme"></label>
+
+					<button id="auth-submit" type="submit">Log In</button>
+
+					<div class="login-info" id="invalid-login">
+						Login denied,
+						<br />
+						Please enter some valid credentials to authenticate.
+					</div>
+
+					<div class="login-info" id="expired-login">
+						Your session has expired,
+						<br />
+						Please authenticate.
+					</div>
+				</form>
+			</div>
+		</section>
+
+		<nav class="side-navigation">
+			<ul>
+				<li>
+					<a href="dashboard" data-menu="dashboard">
+						<img src="img/dashboard.svg" alt="Dashboard icon" />
+						Dashboard
+					</a>
+				</li>
+
+				<li>
+					<a href="network" data-menu="network">
+						<img src="img/network.svg" alt="Network icon" />
+						Network
+					</a>
+				</li>
+
+				<li>
+					<a href="datas" data-menu="datas">
+						<img src="img/datas.svg" alt="Datas icon" />
+						Datas
+					</a>
+				</li>
+
+				<li>
+					<a href="config" data-menu="config">
+						<img src="img/config.svg" alt="Config icon" />
+						Config
+					</a>
+				</li>
+				<li>
+					<a href="dashboard" id="logout">
+						<img src="img/logout.svg" alt="Logout icon" />
+						Logout
+					</a>
+				</li>
+			</ul>
+		</nav>
+
+		<div id="loading-bar" data-scale="1" class="dashboard"></div>
+
+		<main class="cd-main">
+			<section class="cd-section dashboard">
+				<header>
+					<div class="animated-content">
+						<h2>Dashboard</h2>
+						<span>Welcome to Carduino app !</span>
+						<br />
+						<img src="img/architecture.svg" alt="Carduino architecture" />
+					</div>
+				</header>
+			</section>
+
+			<section class="cd-section network">
+				<header>
+					<div class="animated-content">
+						<h2>Network Graph</h2>
+						<span>Realtime Carduino network tree representation</span>
+						<div id="network-graph"></div>
+					</div>
+				</header>
+			</section>
+
+			<section class="cd-section datas">
+				<header>
+					<div class="animated-content">
+						<h2>Datas</h2>
+						<span>Some text here</span>
+						<div id="chart"></div>
+					</div>
+				</header>
+			</section>
+
+			<section class="cd-section config">
+				<header>
+					<div class="animated-content">
+						<h2>Config</h2>
+						<span>Some text here</span>
+						<br />
+						<div class="config-content">
+							<div class="config-panel users-panel">
+								<table>
+									<tr>
+										<th>Username</th>
+										<th>Admin</th>
+										<th>DL</th>
+									</tr>
+									<tr>
+										<td>Vincent</td>
+										<td>tick</td>
+										<td><a class="trash" href="#"></a></td>
+									</tr>
+									<tr>
+										<td>Vincent</td>
+										<td>tick</td>
+										<td><a class="trash" href="#"></a></td>
+									</tr>
+									<tr>
+										<td>Vincent</td>
+										<td>tick</td>
+										<td><a class="trash" href="#"></a></td>
+									</tr>
+								</table>
+
+								<h3>Add a new User :</h3>
+								<input id="new-user-username" type="text" placeholder="Username" />
+								<input id="new-user-password" type="text" placeholder="Password" />
+								<br />
+								<span>Remember me</span>
+								<input id="new-user-admin" class="toggle" type="checkbox" />
+								<label for="new-user-admin"></label>
+								<button id="new-user-submit" type="submit">Register</button>
+							</div>
+
+							<hr />
+
+							<div class="config-panel hubs-panel">
+								<table>
+									<tr>
+										<th>Name</th>
+										<th>Id</th>
+										<th>Delete</th>
+									</tr>
+									<tr>
+										<td>ESTIA 1</td>
+										<td>34019</td>
+										<td><a class="trash" href="#"></a></td>
+									</tr>
+									<tr>
+										<td>ESTIA 2</td>
+										<td>1294</td>
+										<td><a class="trash" href="#"></a></td>
+									</tr>
+									<tr>
+										<td>COMPOSITADOUR</td>
+										<td>78474</td>
+										<td><a class="trash" href="#"></a></td>
+									</tr>
+								</table>
+
+								<h3>Add a new hub :</h3>
+								<input id="new-hub-name" type="text" placeholder="Name" />
+								<input id="new-hub-id" type="text" placeholder="Id" />
+								<button id="new-hub-submit" type="submit">Add</button>
+							</div>
+						</div>
+					</div>
+				</header>
+			</section>
+
+			<section class="cd-section error-404">
+				<header>
+					<div class="animated-content">
+						<h2>404 - NOT FOUND</h2>
+						<span>Error 404 | The requested URL was not found on this server.</span>
+					</div>
+				</header>
+			</section>
+		</main>
+
+		<script src="js/jquery.js"></script>
+		<script src="js/socket.io.js"></script>
+		<script src="js/velocity.js"></script>
+		<script src="js/d3.js"></script>
+		<script src="js/c3.js"></script>
+		<script src="js/main.js"></script>
+	</body>
+</html>

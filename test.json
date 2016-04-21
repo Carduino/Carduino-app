@@ -1,0 +1,45 @@
+{
+	"name": "Carduino-server",
+	"children": [{
+		"name": "Hub 1",
+		"children": [{
+			"name": "Sensor 3456"
+		}, {
+			"name": "Sensor 0876"
+		}, {
+			"name": "Sensor 1727"
+		}]
+	}, {
+		"name": "Hub 2",
+		"children": [{
+			"name": "Sensor 3514"
+		}, {
+			"name": "Sensor 0202"
+		}, {
+			"name": "Sensor 2314"
+		}, {
+			"name": "Sensor 8970"
+		}, {
+			"name": "Sensor 0101"
+		}, {
+			"name": "Sensor 7815"
+		}]
+	}, {
+		"name": "Hub 3",
+		"children": [{
+			"name": "Sensor 3514"
+		}, {
+			"name": "Sensor 0202"
+		}, {
+			"name": "Sensor 2314"
+		}]
+
+	}, {
+		"name": "Hub 4",
+		"children": [{
+			"name": "Sensor 3514"
+		}, {
+			"name": "Sensor 0202"
+		}]
+	}]
+}
