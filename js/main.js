@@ -13,7 +13,7 @@ jQuery(document).ready(function($) {
 		initPageName = initPagePath[initPagePath.length - 1].replace('.html', ''),
 		disconnected = false,
 		rememberme = (window.localStorage.token) ? true : false,
-		serverAddress = 'carduino-api.dauliac.fr', // localhost:3000
+		serverAddress = 'dauliac.fr:3000', // localhost:3000
 		socket,
 		token;
 
