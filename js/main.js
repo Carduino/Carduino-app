@@ -15,7 +15,8 @@ jQuery(document).ready(function($) {
 		rememberme = (window.localStorage.token) ? true : false,
 		serverAddress = 'dauliac.fr:3000', // localhost:3000
 		socket,
-		token;
+		token,
+		root;
 
 	// Cache DOM elements
 	var body = $('html > body'),
@@ -98,6 +99,7 @@ jQuery(document).ready(function($) {
 		authenticated = false;
 		token = null;
 		switchToLogin('expired-login');
+		resetInterface();
 	});
 
 	// When invalid credentials has been used for obtaining a token
@@ -119,6 +121,7 @@ jQuery(document).ready(function($) {
 		window.localStorage.clear();
 		token = null;
 		socket.disconnect();
+		resetInterface();
 		setTimeout(function() {
 			socket.connect();
 		}, 1000);
@@ -147,6 +150,7 @@ jQuery(document).ready(function($) {
 			switchToInfo('connexion-closed');
 		}
 		authenticated = false;
+		resetInterface();
 	});
 
 	// When the connexion get reconnected conserving the same socket object after a disconnection event.
@@ -156,6 +160,48 @@ jQuery(document).ready(function($) {
 		//else switchToLogin();
 	});
 
+
+
+	//-----------------------------------------//
+	//---------- Network tree events ----------//
+	//-----------------------------------------//
+
+	// When a node is added to the tree
+	socket.on('addNode', function(message) {
+		console.log('new-node !');
+		addNode(message.parentNodeName, message.node);
+	});
+
+	// When a node is removed from the tree
+	socket.on('removeNode', function(nodeName) {
+		removeNode(nodeName);
+	});
+
+	// When a node is updated in the tree
+	socket.on('updateNode', function(node) {
+		updateNode(node);
+	});
+
+	// When the full tree is updated
+	socket.on('treeUpdate', function(hubArray) {
+		updateTree(hubArray);
+	});
+
+
+
+	//-----------------------------------------//
+	//--------------- Interface ---------------//
+	//-----------------------------------------//
+
+	// When the server send all datas to fill the interface
+	socket.on('refreshInterface', function(interfaceDatas) {
+		refreshInterface(interfaceDatas);
+	});
+
+	// When the server send sensors datas fill the interface
+	socket.on('sensorsDatas', function(SensorsDatas) {
+		console.log(sensorsDatas);
+	});
 
 
 	//-----------------------------------------//
@@ -225,6 +271,20 @@ jQuery(document).ready(function($) {
 		overlay.fadeIn(300);
 	}
 
+	function resetInterface() {
+		updateTree({});
+		// ... À compléter
+		// ...
+		// ...
+	}
+
+	function refreshInterface(interfaceDatas) {
+		updateTree(interfaceDatas.networkTree);
+		// ... À compléter
+		// ...
+		// ...
+	}
+
 
 
 	//-----------------------------------------//
@@ -267,17 +327,6 @@ jQuery(document).ready(function($) {
 		}
 		firstLoad = true;
 	});
-
-	//scroll to content if user clicks the .cd-scroll icon
-	/*
-	mainContent.on('click', '.cd-scroll', function(event) {
-		event.preventDefault();
-		var scrollId = $(this.hash);
-		$(scrollId).velocity('scroll', {
-			container: $(".cd-section")
-		}, 200);
-	});
-	*/
 
 	//start animation
 	function triggerAnimation(newSection, bool) {
@@ -373,32 +422,114 @@ jQuery(document).ready(function($) {
 
 	function findNodeChildren(node) {
 		if (node._children) return node._children;
-		else return node.children;
+		else if (node.children) return node.children;
+		else return null;
 	}
 
-	function addNode(parentNode, node) {
+	function addNode(parentNodeName, node) {
+		var parentNode = null;
+		if (parentNodeName === 'Carduino-server') {
+			parentNode = root;
+		} else {
+			var nodeIndex = findNodeChildren(root).findIndex(function(node) {
+				return node.name === parentNodeName;
+			});
+			if (nodeIndex > -1) {
+				parentNode = findNodeChildren(root)[nodeIndex];
+			}
+		}
 		findNodeChildren(parentNode).push(node);
 		update(parentNode);
 	}
 
-	function removeNode(parentNode, nodeName) {
-		var nodeIndex = findNodeChildren(parentNode).findIndex(function(node) {
+	function removeNode(nodeName) {
+		var nodeIndex = findNodeChildren(root).findIndex(function(node) {
 			return node.name === nodeName;
 		});
 		if (nodeIndex > -1) {
-			findNodeChildren(parentNode).splice(nodeIndex, 1);
-			update(parentNode);
+			findNodeChildren(root).splice(nodeIndex, 1);
+			update(root);
+		} else {
+			for (i = 0; i < findNodeChildren(root).length; i++) {
+				nodeIndex = findNodeChildren(findNodeChildren(root)[i]).findIndex(function(node) {
+					return node.name === nodeName;
+				});
+				if (nodeIndex > -1) {
+					findNodeChildren(findNodeChildren(root)[i]).splice(nodeIndex, 1);
+					update(findNodeChildren(root)[i]);
+				}
+			}
 		}
 	}
 
+	function updateNode(newNode) {
+		var nodeIndex = findNodeChildren(root).findIndex(function(node) {
+			return node.name === newNode.name;
+		});
+		if (nodeIndex > -1) {
+			findNodeChildren(root)[nodeIndex] = newNode;
+			update(root);
+		} else {
+			for (i = 0; i < findNodeChildren(root).length; i++) {
+				nodeIndex = findNodeChildren(findNodeChildren(root)[i]).findIndex(function(node) {
+					return node.name === newNode.name;
+				});
+				if (nodeIndex > -1) {
+					findNodeChildren(findNodeChildren(root)[i])[nodeIndex] = newNode;
+					update(findNodeChildren(root)[i]);
+				}
+			}
+		}
+	}
+
+	function updateTree(hubArray) {
+		if (root._children) root._children = hubArray;
+		else if (root.children) root.children = hubArray;
+		else root.children = root._children = hubArray;
+		update(root);
+	}
+
+	/*setTimeout(function() {
+		$.getJSON("test.json", function(tree) {
+			root = tree;
+			root.x0 = height / 2;
+			root.y0 = 0;
+			update(root);
+		});
+	}, 2000);
+
 	setTimeout(function() {
 		//root.children.forEach(addadd);
-		var newSensor = {
-			name: 'Coucou'
-		};
-		addNode(root, newSensor);
-		removeNode(root, 'Hub 2');
-	}, 3000);
+		var newSensor = [{
+			name: "Hub 1",
+			children: [{
+				name: "Sensor 3456"
+			}, {
+				name: "Sensor 0876"
+			}, {
+				name: "Sensor 1727"
+			}]
+		}, {
+			name: "Hub 2",
+			children: [{
+				name: "Sensor 3514"
+			}, {
+				name: "Sensor 0202"
+			}, {
+				name: "Sensor 2314"
+			}, {
+				name: "Sensor 8970"
+			}, {
+				name: "Sensor 0101"
+			}, {
+				name: "Sensor 7815"
+			}]
+		}];
+		//addNode(root.children[0], newSensor);
+		//updateTree({});
+	}, 3000);*/
+
+
 
 	var margin = {
 			top: 40,
@@ -410,9 +541,9 @@ jQuery(document).ready(function($) {
 		//height = 600 - margin.top - margin.bottom;
 		height = $(window).height() - $('#network-graph').offset().top - 20; // - margin.top - margin.bottom;
 	console.log($('#network-graph').offset().top);
+
 	var i = 0,
-		duration = 750,
-		root;
+		duration = 750;
 	var tree = d3.layout.tree()
 		.size([height - margin.top - margin.bottom, width]);
 	var diagonal = d3.svg.diagonal()
@@ -426,22 +557,23 @@ jQuery(document).ready(function($) {
 		.attr("height", height)
 		.append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-	d3.json("test.json", function(error, flare) {
-		if (error) throw error;
-		root = flare;
-		root.x0 = height / 2;
-		root.y0 = 0;
 
-		function collapse(d) {
-			if (d.children) {
-				d._children = d.children;
-				d._children.forEach(collapse);
-				d.children = null;
-			}
+
+	root = {
+		name: 'Carduino-server'
+	};
+	root.x0 = height / 2;
+	root.y0 = 0;
+
+	function collapse(d) {
+		if (d.children) {
+			d._children = d.children;
+			d._children.forEach(collapse);
+			d.children = null;
 		}
-		//root.children.forEach(collapse);
-		update(root);
-	});
+	}
+	//root.children.forEach(collapse);
+	update(root);
 
 
 	//d3.select(self.frameElement).style("height", "800px"); ???????????????????????????
@@ -479,15 +611,15 @@ jQuery(document).ready(function($) {
 			})
 			.on("click", click);
 		nodeEnter.append("circle")
-
-		.attr("r", 1e-6)
+			.attr("r", 1e-6)
 			.style("fill", function(d) {
 				return d._children ? "lightsteelblue" : "#fff";
 			});
 		nodeEnter.append("text")
 			.attr("x", function(d) {
-				if (d.depth === 1) return 0;
-				else return d.children || d._children ? -10 : 10;
+				if (d.depth === 0) return -10;
+				else if (d.depth === 1) return 0;
+				else return 10;
 			})
 			.attr("y", function(d) {
 				if (d.depth === 1) return -15;
@@ -495,8 +627,9 @@ jQuery(document).ready(function($) {
 			})
 			.attr("dy", ".35em")
 			.attr("text-anchor", function(d) {
-				if (d.depth === 1) return "middle";
-				else return d.children || d._children ? "end" : "start";
+				if (d.depth === 0) return "end";
+				else if (d.depth === 1) return "middle";
+				else return "start";
 			})
 			.text(function(d) {
 				return d.name;
