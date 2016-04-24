@@ -199,7 +199,7 @@ jQuery(document).ready(function($) {
 	});
 
 	// When the server send sensors datas fill the interface
-	socket.on('sensorsDatas', function(SensorsDatas) {
+	socket.on('sensorsDatas', function(sensorsDatas) {
 		console.log(sensorsDatas);
 	});
 
