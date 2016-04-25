@@ -174,17 +174,17 @@ jQuery(document).ready(function($) {
 
 	// When a node is removed from the tree
 	socket.on('removeNode', function(nodeName) {
-		removeNode(nodeName);
+		//removeNode(nodeName);
 	});
 
 	// When a node is updated in the tree
 	socket.on('updateNode', function(node) {
-		updateNode(node);
+		//updateNode(node);
 	});
 
 	// When the full tree is updated
 	socket.on('treeUpdate', function(hubArray) {
-		updateTree(hubArray);
+		//updateTree(hubArray);
 	});
 
 
@@ -195,23 +195,21 @@ jQuery(document).ready(function($) {
 
 	// When the server send all datas to fill the interface
 	socket.on('refreshInterface', function(interfaceDatas) {
-		refreshInterface(interfaceDatas);
+		//refreshInterface(interfaceDatas);
 	});
 
-	// When the server send sensors datas fill the interface
-	socket.on('sensorsDatas', function(sensorsDatas) {
-		console.log(sensorsDatas);
-	});
+	// When the server send sensors datas to fill the interface
 	socket.on('sensorData', function(sensorData) {
 		console.log(sensorData);
-		chart.flow({
+		/*chart.flow({
 			columns: [
 				['data1', sensorData.battery],
 				['data2', sensorData.bpm]
 			],
 			duration: 600
-		});
+		});*/
 	});
+
 
 
 	//-----------------------------------------//
@@ -236,7 +234,7 @@ jQuery(document).ready(function($) {
 
 	function initSocketIO() {
 		socket = io.connect('ws://' + serverAddress, {
-			'forceNew': true
+			//'forceNew': true
 		});
 	}
 
@@ -282,14 +280,14 @@ jQuery(document).ready(function($) {
 	}
 
 	function resetInterface() {
-		updateTree({});
+		//updateTree({});
 		// ... À compléter
 		// ...
 		// ...
 	}
 
 	function refreshInterface(interfaceDatas) {
-		updateTree(interfaceDatas.networkTree);
+		//updateTree(interfaceDatas.networkTree);
 		// ... À compléter
 		// ...
 		// ...
@@ -431,9 +429,11 @@ jQuery(document).ready(function($) {
 	//-----------------------------------------//
 
 	function findNodeChildren(node) {
-		if (node._children) return node._children;
-		else if (node.children) return node.children;
-		else return null;
+		if (node) {
+			if (node._children) return node._children;
+			else if (node.children) return node.children;
+			else return null;
+		} else return null;
 	}
 
 	function addNode(parentNodeName, node) {
@@ -448,8 +448,11 @@ jQuery(document).ready(function($) {
 				parentNode = findNodeChildren(root)[nodeIndex];
 			}
 		}
-		findNodeChildren(parentNode).push(node);
-		update(parentNode);
+		if (findNodeChildren(parentNode)) {
+			findNodeChildren(parentNode).push(node);
+		}
+		update(root);
+		console.log(root);
 	}
 
 	function removeNode(nodeName) {
@@ -461,15 +464,18 @@ jQuery(document).ready(function($) {
 			update(root);
 		} else {
 			for (i = 0; i < findNodeChildren(root).length; i++) {
-				nodeIndex = findNodeChildren(findNodeChildren(root)[i]).findIndex(function(node) {
-					return node.name === nodeName;
-				});
-				if (nodeIndex > -1) {
-					findNodeChildren(findNodeChildren(root)[i]).splice(nodeIndex, 1);
-					update(findNodeChildren(root)[i]);
+				if (findNodeChildren(findNodeChildren(root)[i])) {
+					nodeIndex = findNodeChildren(findNodeChildren(root)[i]).findIndex(function(node) {
+						return node.name === nodeName;
+					});
+					if (nodeIndex > -1) {
+						findNodeChildren(findNodeChildren(root)[i]).splice(nodeIndex, 1);
+						update(root);
+					}
 				}
 			}
 		}
+		console.log(root);
 	}
 
 	function updateNode(newNode) {
@@ -486,10 +492,11 @@ jQuery(document).ready(function($) {
 				});
 				if (nodeIndex > -1) {
 					findNodeChildren(findNodeChildren(root)[i])[nodeIndex] = newNode;
-					update(findNodeChildren(root)[i]);
+					update(root);
 				}
 			}
 		}
+		console.log(root);
 	}
 
 	function updateTree(hubArray) {
@@ -498,15 +505,6 @@ jQuery(document).ready(function($) {
 		else root.children = root._children = hubArray;
 		update(root);
 	}
-
-	/*setTimeout(function() {
-		$.getJSON("test.json", function(tree) {
-			root = tree;
-			root.x0 = height / 2;
-			root.y0 = 0;
-			update(root);
-		});
-	}, 2000);
 
 	setTimeout(function() {
 		//root.children.forEach(addadd);
@@ -537,7 +535,7 @@ jQuery(document).ready(function($) {
 		}];
 		//addNode(root.children[0], newSensor);
 		//updateTree({});
-	}, 3000);*/
+	}, 3000);
 
 
 
@@ -569,21 +567,22 @@ jQuery(document).ready(function($) {
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
-	root = {
-		name: 'Carduino-server'
-	};
-	root.x0 = height / 2;
-	root.y0 = 0;
+	$.getJSON("test.json", function(tree) {
+		root = tree;
+		root.x0 = height / 2;
+		root.y0 = 0;
 
-	function collapse(d) {
-		if (d.children) {
-			d._children = d.children;
-			d._children.forEach(collapse);
-			d.children = null;
+		function collapse(d) {
+			if (d.children) {
+				d._children = d.children;
+				d._children.forEach(collapse);
+				d.children = null;
+			}
 		}
-	}
-	//root.children.forEach(collapse);
-	update(root);
+		//root.children.forEach(collapse);
+		update(root);
+	});
+
 
 
 	//d3.select(self.frameElement).style("height", "800px"); ???????????????????????????
