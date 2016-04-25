@@ -16,7 +16,8 @@ jQuery(document).ready(function($) {
 		serverAddress = 'dauliac.fr:3000', // localhost:3000
 		socket,
 		token,
-		root;
+		root = [],
+		plotedData = [];
 
 	// Cache DOM elements
 	var body = $('html > body'),
@@ -198,16 +199,83 @@ jQuery(document).ready(function($) {
 		//refreshInterface(interfaceDatas);
 	});
 
+
+
+	//-----------------------------------------//
+	//---------- Realtime Data Chart -----------//
+	//-----------------------------------------//
+
+	// Instanciationg the chart
+	var chart = c3.generate({
+		bindto: '#chart',
+		data: {
+			x: 'date',
+			columns: [],
+			type: 'spline'
+		},
+		axis: {
+			x: {
+				type: 'timeseries',
+				tick: {
+					format: '%H-%M-%S'
+				}
+			},
+			y: {
+				default: [60, 120],
+				max: 180,
+				min: 50,
+			}
+		},
+		zoom: {
+			enabled: true
+		},
+		subchart: {
+			show: true
+		},
+
+	});
+
+	chart.resize({
+		height: 500
+	});
+
+	// Plot data in the chart every 3 seconds
+	setInterval(function() {
+		//var date = new Date(),
+		//	formatedDate = date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+		if (plotedData.length > 0) {
+			var formatedDate = Date.now();
+			plotedData.push(['date', formatedDate]);
+			console.log(plotedData);
+			chart.flow({
+				columns: plotedData,
+				length: 0,
+				duration: 800,
+				done: function() {
+					var dateIndex = plotedData.findIndex(function(date) {
+						return date[0] === 'date';
+					});
+					if (dateIndex > -1) {
+						plotedData.splice(dateIndex, 1);
+					}
+					for (i = 0; i < plotedData.length; i++) {
+						plotedData[i] = [plotedData[i][0], null];
+					}
+				}
+			});
+		}
+	}, 3000);
+
 	// When the server send sensors datas to fill the interface
 	socket.on('sensorData', function(sensorData) {
-		console.log(sensorData);
-		/*chart.flow({
-			columns: [
-				['data1', sensorData.battery],
-				['data2', sensorData.bpm]
-			],
-			duration: 600
-		});*/
+		var sensorIndex = plotedData.findIndex(function(sensor) {
+			return sensor[0] === sensorData.name;
+		});
+		if (sensorIndex > -1) {
+			plotedData[sensorIndex] = [sensorData.name, sensorData.bpm];
+		} else {
+			plotedData.push([sensorData.name, sensorData.bpm]);
+		}
 	});
 
 
@@ -754,24 +822,5 @@ jQuery(document).ready(function($) {
 			update(d);
 		});
 		*/
-	}
-});
-
-
-
-var chart = c3.generate({
-	bindto: '#chart',
-	data: {
-		columns: [
-			['data1', 80, 78, 76, 74, 70],
-			['data2', 50, 55, 65, 70, 65, 65]
-		],
-		type: 'area-spline'
-	},
-	zoom: {
-		enabled: true
-	},
-	subchart: {
-		show: true
 	}
 });
