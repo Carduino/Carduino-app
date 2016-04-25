@@ -203,10 +203,11 @@ jQuery(document).ready(function($) {
 		console.log(sensorsDatas);
 	});
 	socket.on('sensorData', function(sensorData) {
+		console.log(sensorData);
 		chart.flow({
 			columns: [
-				['data1', sensorData.bpm],
-				['data2', sensorData.battery],
+				['data1', sensorData.battery],
+				['data2', sensorData.bpm]
 			],
 			duration: 600
 		});
@@ -763,7 +764,7 @@ var chart = c3.generate({
 	bindto: '#chart',
 	data: {
 		columns: [
-			['data1', 80, 78, 76, 74, 70, ],
+			['data1', 80, 78, 76, 74, 70],
 			['data2', 50, 55, 65, 70, 65, 65]
 		],
 		type: 'area-spline'
@@ -775,12 +776,3 @@ var chart = c3.generate({
 		show: true
 	}
 });
-setTimeout(function() {
-	chart.flow({
-		columns: [
-			['data1', 100, 300],
-			['data2', 200, 120],
-		],
-		duration: 1500
-	});
-}, 2000);
