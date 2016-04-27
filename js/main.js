@@ -168,20 +168,21 @@ jQuery(document).ready(function($) {
 	//-----------------------------------------//
 
 	// When a node is added to the tree
-	socket.on('addNode', function(message) {
-		console.log('new-node !');
-		addNode(message.parentNodeName, message.node);
+	socket.on('addNode', function(addNode) {
+		console.log('new-node ! : ');
+		addNode(addNode.parentNodeName, addNode.node);
 	});
 
 	// When a node is removed from the tree
 	socket.on('removeNode', function(nodeName) {
-		console.log('new-node !');
-		//removeNode(nodeName);
+		console.log('new-node ! : ' + nodeName);
+		removeNode(nodeName);
 	});
 
 	// When a node is updated in the tree
 	socket.on('updateNode', function(node) {
-		console.log('new-node !');
+		console.log('update-node ! : ');
+		console.log(node);
 		//updateNode(node);
 	});
 
