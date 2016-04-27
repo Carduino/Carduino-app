@@ -175,16 +175,19 @@ jQuery(document).ready(function($) {
 
 	// When a node is removed from the tree
 	socket.on('removeNode', function(nodeName) {
+		console.log('new-node !');
 		//removeNode(nodeName);
 	});
 
 	// When a node is updated in the tree
 	socket.on('updateNode', function(node) {
+		console.log('new-node !');
 		//updateNode(node);
 	});
 
 	// When the full tree is updated
 	socket.on('treeUpdate', function(hubArray) {
+		console.log('treeUpdate !');
 		//updateTree(hubArray);
 	});
 
@@ -205,13 +208,14 @@ jQuery(document).ready(function($) {
 	//---------- Realtime Data Chart -----------//
 	//-----------------------------------------//
 
-	// Instanciationg the chart
+	// Instanciating the chart
 	var chart = c3.generate({
 		bindto: '#chart',
 		data: {
 			x: 'date',
 			columns: [],
-			type: 'spline'
+			type: 'spline',
+			//labels: true
 		},
 		axis: {
 			x: {
@@ -221,9 +225,19 @@ jQuery(document).ready(function($) {
 				}
 			},
 			y: {
-				default: [60, 120],
-				max: 180,
+				default: [50, 140],
+				max: 140,
 				min: 50,
+			}
+		},
+		tooltip: {
+			format: {
+				name: function(name, ratio, id, index) {
+					return name;
+				},
+				value: function(value, ratio, id, index) {
+					return value;
+				}
 			}
 		},
 		zoom: {
@@ -232,8 +246,8 @@ jQuery(document).ready(function($) {
 		subchart: {
 			show: true
 		},
-
 	});
+
 
 	chart.resize({
 		height: 500
@@ -265,6 +279,12 @@ jQuery(document).ready(function($) {
 			});
 		}
 	}, 3000);
+
+	/*
+	setTimeout(function() {
+		chart = chart.destroy();
+	}, 15000);
+	*/
 
 	// When the server send sensors datas to fill the interface
 	socket.on('sensorData', function(sensorData) {
@@ -496,117 +516,7 @@ jQuery(document).ready(function($) {
 	//------------- Network Tree --------------//
 	//-----------------------------------------//
 
-	function findNodeChildren(node) {
-		if (node) {
-			if (node._children) return node._children;
-			else if (node.children) return node.children;
-			else return null;
-		} else return null;
-	}
-
-	function addNode(parentNodeName, node) {
-		var parentNode = null;
-		if (parentNodeName === 'Carduino-server') {
-			parentNode = root;
-		} else {
-			var nodeIndex = findNodeChildren(root).findIndex(function(node) {
-				return node.name === parentNodeName;
-			});
-			if (nodeIndex > -1) {
-				parentNode = findNodeChildren(root)[nodeIndex];
-			}
-		}
-		if (findNodeChildren(parentNode)) {
-			findNodeChildren(parentNode).push(node);
-		}
-		update(root);
-		console.log(root);
-	}
-
-	function removeNode(nodeName) {
-		var nodeIndex = findNodeChildren(root).findIndex(function(node) {
-			return node.name === nodeName;
-		});
-		if (nodeIndex > -1) {
-			findNodeChildren(root).splice(nodeIndex, 1);
-			update(root);
-		} else {
-			for (i = 0; i < findNodeChildren(root).length; i++) {
-				if (findNodeChildren(findNodeChildren(root)[i])) {
-					nodeIndex = findNodeChildren(findNodeChildren(root)[i]).findIndex(function(node) {
-						return node.name === nodeName;
-					});
-					if (nodeIndex > -1) {
-						findNodeChildren(findNodeChildren(root)[i]).splice(nodeIndex, 1);
-						update(root);
-					}
-				}
-			}
-		}
-		console.log(root);
-	}
-
-	function updateNode(newNode) {
-		var nodeIndex = findNodeChildren(root).findIndex(function(node) {
-			return node.name === newNode.name;
-		});
-		if (nodeIndex > -1) {
-			findNodeChildren(root)[nodeIndex] = newNode;
-			update(root);
-		} else {
-			for (i = 0; i < findNodeChildren(root).length; i++) {
-				nodeIndex = findNodeChildren(findNodeChildren(root)[i]).findIndex(function(node) {
-					return node.name === newNode.name;
-				});
-				if (nodeIndex > -1) {
-					findNodeChildren(findNodeChildren(root)[i])[nodeIndex] = newNode;
-					update(root);
-				}
-			}
-		}
-		console.log(root);
-	}
-
-	function updateTree(hubArray) {
-		if (root._children) root._children = hubArray;
-		else if (root.children) root.children = hubArray;
-		else root.children = root._children = hubArray;
-		update(root);
-	}
-
-	setTimeout(function() {
-		//root.children.forEach(addadd);
-		var newSensor = [{
-			name: "Hub 1",
-			children: [{
-				name: "Sensor 3456"
-			}, {
-				name: "Sensor 0876"
-			}, {
-				name: "Sensor 1727"
-			}]
-		}, {
-			name: "Hub 2",
-			children: [{
-				name: "Sensor 3514"
-			}, {
-				name: "Sensor 0202"
-			}, {
-				name: "Sensor 2314"
-			}, {
-				name: "Sensor 8970"
-			}, {
-				name: "Sensor 0101"
-			}, {
-				name: "Sensor 7815"
-			}]
-		}];
-		//addNode(root.children[0], newSensor);
-		//updateTree({});
-	}, 3000);
-
-
-
+	// ...
 	var margin = {
 			top: 40,
 			right: 90,
@@ -614,27 +524,24 @@ jQuery(document).ready(function($) {
 			left: 110
 		},
 		width = $('#network-graph').width() - margin.right - margin.left,
-		//height = 600 - margin.top - margin.bottom;
-		height = $(window).height() - $('#network-graph').offset().top - 20; // - margin.top - margin.bottom;
-	console.log($('#network-graph').offset().top);
-
-	var i = 0,
+		height = $(window).height() - $('#network-graph').offset().top - 20,
+		i = 0,
 		duration = 750;
-	var tree = d3.layout.tree()
-		.size([height - margin.top - margin.bottom, width]);
-	var diagonal = d3.svg.diagonal()
-		.projection(function(d) {
+
+	// ...
+	var tree = d3.layout.tree().size([height - margin.top - margin.bottom, width]),
+		diagonal = d3.svg.diagonal().projection(function(d) {
 			return [d.y, d.x];
 		});
+
+	// ...
 	var svg = d3.select('#network-graph').append("svg")
-		//.attr("width", width + margin.right + margin.left)
-		//.attr("height", height + margin.top + margin.bottom)
 		.attr("width", '100%')
 		.attr("height", height)
 		.append("g")
 		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-
+	// ...
 	$.getJSON("test.json", function(tree) {
 		root = tree;
 		root.x0 = height / 2;
@@ -651,22 +558,15 @@ jQuery(document).ready(function($) {
 		update(root);
 	});
 
-
-
-	//d3.select(self.frameElement).style("height", "800px"); ???????????????????????????
-
-
-
-	$(window).on('resize', function() {
-		height = $(window).height() - $('#network-graph').offset().top - 20;
-		width = $('#network-graph').width() - margin.right - margin.left;
-		tree.size([height - margin.top - margin.bottom, width]);
-		$('#network-graph svg').attr("height", height);
-		update(root);
+	/*
+	$.getJSON('test2.json', function(addTheseJSON) {
+		var newnodes = tree.nodes(addTheseJSON.children).reverse();
+		d.children = newnodes[0];
+		update(d);
 	});
+	*/
 
-
-
+	// Draw/Update the network tree
 	function update(source) {
 		// Compute the new tree layout.
 		var nodes = tree.nodes(root).reverse(),
@@ -735,7 +635,6 @@ jQuery(document).ready(function($) {
 				}
 			})
 			.style("fill-opacity", 1e-6);
-
 		// Transition nodes to their new position.
 		var nodeUpdate = node.transition()
 			.duration(duration)
@@ -806,6 +705,7 @@ jQuery(document).ready(function($) {
 			d.y0 = d.y;
 		});
 	}
+
 	// Toggle children on click.
 	function click(d) {
 		if (d.children) {
@@ -816,11 +716,90 @@ jQuery(document).ready(function($) {
 			d._children = null;
 		}
 		update(d);
-		/*$.getJSON('test2.json', function(addTheseJSON) {
-			var newnodes = tree.nodes(addTheseJSON.children).reverse();
-			d.children = newnodes[0];
-			update(d);
-		});
-		*/
 	}
+
+	function findNodeChildren(node) {
+		if (node) {
+			if (node._children) return node._children;
+			else if (node.children) return node.children;
+			else return null;
+		} else return null;
+	}
+
+	function addNode(parentNodeName, node) {
+		var parentNode = null;
+		if (parentNodeName === 'Carduino-server') {
+			parentNode = root;
+		} else {
+			var nodeIndex = findNodeChildren(root).findIndex(function(node) {
+				return node.name === parentNodeName;
+			});
+			if (nodeIndex > -1) {
+				parentNode = findNodeChildren(root)[nodeIndex];
+			}
+		}
+		if (findNodeChildren(parentNode)) {
+			findNodeChildren(parentNode).push(node);
+		}
+		update(root);
+		console.log(root);
+	}
+
+	function removeNode(nodeName) {
+		var test = function(nodeToTest) {
+			return nodeToTest.name === nodeName;
+		};
+		var nodeIndex = findNodeChildren(root).findIndex(test);
+		if (nodeIndex > -1) {
+			findNodeChildren(root).splice(nodeIndex, 1);
+			update(root);
+		} else {
+			for (i = 0; i < findNodeChildren(root).length; i++) {
+				if (findNodeChildren(findNodeChildren(root)[i])) {
+					nodeIndex = findNodeChildren(findNodeChildren(root)[i]).findIndex(test);
+					if (nodeIndex > -1) {
+						findNodeChildren(findNodeChildren(root)[i]).splice(nodeIndex, 1);
+						update(root);
+					}
+				}
+			}
+		}
+		console.log(root);
+	}
+
+	function updateNode(newNode) {
+		var test = function(nodeToTest) {
+			return nodeToTest.name === newNode.name;
+		};
+		var nodeIndex = findNodeChildren(root).findIndex(test);
+		if (nodeIndex > -1) {
+			findNodeChildren(root)[nodeIndex] = newNode;
+			update(root);
+		} else {
+			for (i = 0; i < findNodeChildren(root).length; i++) {
+				nodeIndex = findNodeChildren(findNodeChildren(root)[i]).findIndex(test);
+				if (nodeIndex > -1) {
+					findNodeChildren(findNodeChildren(root)[i])[nodeIndex] = newNode;
+					update(root);
+				}
+			}
+		}
+		console.log(root);
+	}
+
+	function updateTree(hubArray) {
+		if (root._children) root._children = hubArray;
+		else if (root.children) root.children = hubArray;
+		else root.children = root._children = hubArray;
+		update(root);
+	}
+
+	// Adapt the height of the tree when the window is resized
+	$(window).on('resize', function() {
+		height = $(window).height() - $('#network-graph').offset().top - 20;
+		width = $('#network-graph').width() - margin.right - margin.left;
+		tree.size([height - margin.top - margin.bottom, width]);
+		$('#network-graph svg').attr("height", height);
+		update(root);
+	});
 });
