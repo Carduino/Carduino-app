@@ -170,13 +170,13 @@ jQuery(document).ready(function($) {
 	// When a node is added to the tree
 	socket.on('addNode', function(addNode) {
 		console.log('new-node ! : ');
-		addNode(addNode.parentNodeName, addNode.node);
+		//addNode(addNode.parentNodeName, addNode.node);
 	});
 
 	// When a node is removed from the tree
 	socket.on('removeNode', function(nodeName) {
 		console.log('new-node ! : ' + nodeName);
-		removeNode(nodeName);
+		//removeNode(nodeName);
 	});
 
 	// When a node is updated in the tree
@@ -376,7 +376,7 @@ jQuery(document).ready(function($) {
 	}
 
 	function refreshInterface(interfaceDatas) {
-		//updateTree(interfaceDatas.networkTree);
+		updateTree(interfaceDatas.networkTree);
 		// ... À compléter
 		// ...
 		// ...
@@ -789,9 +789,19 @@ jQuery(document).ready(function($) {
 	}
 
 	function updateTree(hubArray) {
-		if (root._children) root._children = hubArray;
-		else if (root.children) root.children = hubArray;
-		else root.children = root._children = hubArray;
+		$.getJSON("test.json", function(tree) {
+			root = tree;
+			root.x0 = height / 2;
+			root.y0 = 0;
+			if (root._children) root._children = hubArray;
+			else if (root.children) root.children = hubArray;
+			else root.children = root._children = hubArray;
+			if (findNodeChildren(root)) {
+				for (i = 0; i < hubArray.length; i++) {
+					findNodeChildren(root).push(hubArray[i]);
+				}
+			}
+		});
 		update(root);
 	}
 

@@ -1,6 +1,13 @@
 {
 	"name": "Carduino-server",
 	"children": [{
+		"name": "Hub 1",
+		"children": [{
+			"name": "Name 2"
+		}, {
+			"name": "Strap v1"
+		}]
+	}, {
 		"name": "Hub 2",
 		"children": [{
 			"name": "Sensor 3514"
